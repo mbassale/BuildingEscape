@@ -30,11 +30,18 @@ void UOpenDoor::BeginPlay()
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (this->ActorThatOpens && this->PressurePlate && this->PressurePlate->IsOverlappingActor(this->ActorThatOpens)) 
+	{
+		OpenDoor(DeltaTime);
+	}
+}
 
+void UOpenDoor::OpenDoor(float DeltaTime)
+{
 	FRotator CurrentRotation = GetOwner()->GetActorRotation();
-	if (FMath::Abs(CurrentRotation.Yaw - TargetYaw) > INTERPOLATION_TOLERANCE) {
+	if (FMath::Abs(CurrentRotation.Yaw - TargetYaw) > INTERPOLATION_TOLERANCE) 
+	{
 		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, TargetYaw, DeltaTime, OpenAngularSpeed);
 		GetOwner()->SetActorRotation(CurrentRotation);
 	}
 }
-
