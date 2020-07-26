@@ -1,9 +1,9 @@
 // Copyright 2020. Marco Bassaletti <bassaletti@gmail.com>
 
+#include "OpenDoor.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
-#include "OpenDoor.h"
 
 #define INTERPOLATION_TOLERANCE 0.05
 
@@ -23,7 +23,7 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 	InitialYaw = GetOwner()->GetActorRotation().Yaw;
-	TargetYaw = InitialYaw + TargetYaw;
+	OpenAngle = InitialYaw + OpenAngle;
 	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
@@ -35,15 +35,30 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	if (this->ActorThatOpens && this->PressurePlate && this->PressurePlate->IsOverlappingActor(this->ActorThatOpens)) 
 	{
 		OpenDoor(DeltaTime);
+		DoorLastOpened = GetWorld()->GetTimeSeconds();
+	}
+	else if ((GetWorld()->GetTimeSeconds() - DoorLastOpened) > CloseDelay) 
+	{
+		CloseDoor(DeltaTime);
 	}
 }
 
 void UOpenDoor::OpenDoor(float DeltaTime)
 {
 	FRotator CurrentRotation = GetOwner()->GetActorRotation();
-	if (FMath::Abs(CurrentRotation.Yaw - TargetYaw) > INTERPOLATION_TOLERANCE) 
+	if (FMath::Abs(CurrentRotation.Yaw - OpenAngle) > INTERPOLATION_TOLERANCE) 
 	{
-		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, TargetYaw, DeltaTime, OpenAngularSpeed);
+		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, OpenAngle, DeltaTime, OpenSpeed);
+		GetOwner()->SetActorRotation(CurrentRotation);
+	}
+}
+
+void UOpenDoor::CloseDoor(float DeltaTime)
+{
+	FRotator CurrentRotation = GetOwner()->GetActorRotation();
+	if (FMath::Abs(CurrentRotation.Yaw - InitialYaw) > INTERPOLATION_TOLERANCE)
+	{
+		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, InitialYaw, DeltaTime, CloseSpeed);
 		GetOwner()->SetActorRotation(CurrentRotation);
 	}
 }
