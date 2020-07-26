@@ -1,8 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2020. Marco Bassaletti <bassaletti@gmail.com>
 
-
-#include "OpenDoor.h"
+#include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/PlayerController.h"
+#include "OpenDoor.h"
 
 #define INTERPOLATION_TOLERANCE 0.05
 
@@ -23,6 +24,7 @@ void UOpenDoor::BeginPlay()
 	Super::BeginPlay();
 	InitialYaw = GetOwner()->GetActorRotation().Yaw;
 	TargetYaw = InitialYaw + TargetYaw;
+	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 
