@@ -49,8 +49,7 @@ private:
 	float OpenMass = 50.0f;
 		
 	UPROPERTY(EditAnywhere)
-	ATriggerVolume* PressurePlate;
+	ATriggerVolume* PressurePlate = nullptr;
 
-	AActor* ActorThatOpens;
 	float DoorLastOpened = 0.f;
 };
