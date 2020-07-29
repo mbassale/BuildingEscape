@@ -24,6 +24,7 @@ protected:
 	void FindPhysicsHandle();
 	void SetupInputComponent();
 	FHitResult GetFirstPhysicsBodyInReach() const;
+	FVector GetPlayersReach() const;
 
 private:
 	UPROPERTY(EditAnywhere)
