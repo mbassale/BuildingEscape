@@ -1,6 +1,7 @@
 // Copyright 2020. Marco Bassaletti <bassaletti@gmail.com>
 
 #include "OpenDoor.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
@@ -32,7 +33,7 @@ void UOpenDoor::BeginPlay()
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (this->ActorThatOpens && this->PressurePlate && this->PressurePlate->IsOverlappingActor(this->ActorThatOpens)) 
+	if (this->ActorThatOpens && this->PressurePlate && GetTotalMassOfActors() > OpenMass) 
 	{
 		OpenDoor(DeltaTime);
 		DoorLastOpened = GetWorld()->GetTimeSeconds();
@@ -61,4 +62,19 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, InitialYaw, DeltaTime, CloseSpeed);
 		GetOwner()->SetActorRotation(CurrentRotation);
 	}
+}
+
+float UOpenDoor::GetTotalMassOfActors() const
+{
+	float TotalMass = 0.0f;
+	TArray<AActor*> OverlappingActors;
+	if (this->PressurePlate)
+	{
+		this->PressurePlate->GetOverlappingActors(OverlappingActors);
+		for (AActor* Actor : OverlappingActors)
+		{
+			TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+		}
+	}
+	return TotalMass;
 }
