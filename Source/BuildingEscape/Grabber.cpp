@@ -20,10 +20,30 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-
 	UE_LOG(LogTemp, Warning, TEXT("Grabber Begin Play."));
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (!PhysicsHandle) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("No physics handle: %s"), *(GetOwner()->GetName()));
+	}
+
+	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
+	if (InputComponent) 
+	{
+		InputComponent->BindAction(TEXT("Grab"), IE_Pressed, this, &UGrabber::Grab);
+		InputComponent->BindAction(TEXT("Grab"), IE_Released, this, &UGrabber::Release);
+	}
 }
 
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grabber Pressed"));
+}
+
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grabber Released"));
+}
 
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -49,6 +69,10 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		if (ActorHit)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Selecting: %s"), *(ActorHit->GetName()));
+			if (PhysicsHandle)
+			{
+				
+			}
 		}
 	}
 }
