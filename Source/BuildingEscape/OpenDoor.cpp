@@ -25,6 +25,7 @@ void UOpenDoor::BeginPlay()
 	Super::BeginPlay();
 	InitialYaw = GetOwner()->GetActorRotation().Yaw;
 	OpenAngle = InitialYaw + OpenAngle;
+	AudioComponent = GetOwner()->FindComponentByClass<UAudioComponent>();
 }
 
 
@@ -50,6 +51,16 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 	{
 		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, OpenAngle, DeltaTime, OpenSpeed);
 		GetOwner()->SetActorRotation(CurrentRotation);
+
+		if (AudioComponent && !AudioPlayed)
+		{
+			AudioComponent->Play();
+			AudioPlayed = true;
+		}
+	} 
+	else if (AudioPlayed)
+	{
+		AudioPlayed = false;
 	}
 }
 
@@ -60,6 +71,16 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 	{
 		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, InitialYaw, DeltaTime, CloseSpeed);
 		GetOwner()->SetActorRotation(CurrentRotation);
+
+		if (AudioComponent && !AudioPlayed)
+		{
+			AudioComponent->Play();
+			AudioPlayed = true;
+		}
+	}
+	else if (AudioPlayed)
+	{
+		AudioPlayed = false;
 	}
 }
 
