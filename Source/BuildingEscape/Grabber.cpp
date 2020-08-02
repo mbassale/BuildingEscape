@@ -28,8 +28,9 @@ void UGrabber::Grab()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Grabber Pressed"));
 	FHitResult HitResult = GetFirstPhysicsBodyInReach();
+	AActor* ActorHit = HitResult.GetActor();
 	UPrimitiveComponent* ComponentHit = HitResult.GetComponent();
-	if (HitResult.GetActor() && ComponentHit && PhysicsHandle)
+	if (ActorHit && ComponentHit && PhysicsHandle)
 	{
 		PhysicsHandle->GrabComponent(ComponentHit, NAME_None, GetPlayersReach(), true);
 	}
@@ -80,10 +81,20 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 	FRotator PlayerViewPointRotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-	FHitResult HitResult;
+	TArray<FHitResult> HitResults;
+	FHitResult DraggableResult;
 	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
-	GetWorld()->LineTraceSingleByObjectType(HitResult, PlayerViewPointLocation, LineTraceEnd, FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody), TraceParams);
-	return HitResult;
+	GetWorld()->LineTraceMultiByObjectType(HitResults, PlayerViewPointLocation, LineTraceEnd, FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody), TraceParams);
+	for (int i = 0; i < HitResults.Num(); i++)
+	{
+		AActor* ActorHit = HitResults[i].GetActor();
+		if (ActorHit && ActorHit->ActorHasTag(TEXT("Draggable"))) 
+		{
+			DraggableResult = HitResults[i];
+			break;
+		}
+	}
+	return DraggableResult;
 }
 
 FVector UGrabber::GetPlayersReach() const
