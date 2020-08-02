@@ -8,6 +8,11 @@
 #include "Engine/TriggerVolume.h"
 #include "OpenDoor.generated.h"
 
+UENUM()
+enum EDoorType {
+	DOOR_TYPE_ROTATING	UMETA(DisplayName = "Rotating Door"),
+	DOOR_TYPE_SLIDE		UMETA(DisplayName = "Sliding Door"),
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BUILDINGESCAPE_API UOpenDoor : public UActorComponent
@@ -30,6 +35,15 @@ public:
 	float GetTotalMassOfActors() const;
 
 private:
+	UPROPERTY(EditAnywhere, Category = EDoorType)
+	TEnumAsByte<EDoorType> DoorType = DOOR_TYPE_ROTATING;
+
+	UPROPERTY(EditAnywhere)
+	float VerticalOffset = 100.0f;
+
+	float InitialVerticalPosition;
+	float FinalVerticalPosition;
+
 	float InitialYaw;
 
 	float CurrentYaw;

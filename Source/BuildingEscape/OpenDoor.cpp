@@ -23,9 +23,17 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
-	InitialYaw = GetOwner()->GetActorRotation().Yaw;
-	OpenAngle = InitialYaw + OpenAngle;
 	AudioComponent = GetOwner()->FindComponentByClass<UAudioComponent>();
+	if (DoorType == DOOR_TYPE_ROTATING)
+	{
+		InitialYaw = GetOwner()->GetActorRotation().Yaw;
+		OpenAngle = InitialYaw + OpenAngle;
+	}
+	else if (DoorType == DOOR_TYPE_SLIDE)
+	{
+		InitialVerticalPosition = GetOwner()->GetActorLocation().Z;
+		FinalVerticalPosition = InitialVerticalPosition + VerticalOffset;
+	}
 }
 
 
@@ -46,41 +54,85 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 
 void UOpenDoor::OpenDoor(float DeltaTime)
 {
-	FRotator CurrentRotation = GetOwner()->GetActorRotation();
-	if (FMath::Abs(CurrentRotation.Yaw - OpenAngle) > INTERPOLATION_TOLERANCE) 
+	if (DoorType == DOOR_TYPE_ROTATING)
 	{
-		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, OpenAngle, DeltaTime, OpenSpeed);
-		GetOwner()->SetActorRotation(CurrentRotation);
-
-		if (AudioComponent && !AudioPlayed)
+		FRotator CurrentRotation = GetOwner()->GetActorRotation();
+		if (FMath::Abs(CurrentRotation.Yaw - OpenAngle) > INTERPOLATION_TOLERANCE)
 		{
-			AudioComponent->Play();
-			AudioPlayed = true;
+			CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, OpenAngle, DeltaTime, OpenSpeed);
+			GetOwner()->SetActorRotation(CurrentRotation);
+
+			if (AudioComponent && !AudioPlayed)
+			{
+				AudioComponent->Play();
+				AudioPlayed = true;
+			}
 		}
-	} 
-	else if (AudioPlayed)
+		else if (AudioPlayed)
+		{
+			AudioPlayed = false;
+		}
+	}
+	else if (DoorType == DOOR_TYPE_SLIDE)
 	{
-		AudioPlayed = false;
+		FVector CurrentLocation = GetOwner()->GetActorLocation();
+		if (FMath::Abs(CurrentLocation.Z - FinalVerticalPosition) > INTERPOLATION_TOLERANCE)
+		{
+			CurrentLocation.Z = FMath::FInterpConstantTo(CurrentLocation.Z, FinalVerticalPosition, DeltaTime, OpenSpeed);
+			GetOwner()->SetActorLocation(CurrentLocation);
+
+			if (AudioComponent && !AudioPlayed)
+			{
+				AudioComponent->Play();
+				AudioPlayed = true;
+			}
+		}
+		else if (AudioPlayed)
+		{
+			AudioPlayed = false;
+		}
 	}
 }
 
 void UOpenDoor::CloseDoor(float DeltaTime)
 {
-	FRotator CurrentRotation = GetOwner()->GetActorRotation();
-	if (FMath::Abs(CurrentRotation.Yaw - InitialYaw) > INTERPOLATION_TOLERANCE)
+	if (DoorType == DOOR_TYPE_ROTATING)
 	{
-		CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, InitialYaw, DeltaTime, CloseSpeed);
-		GetOwner()->SetActorRotation(CurrentRotation);
-
-		if (AudioComponent && !AudioPlayed)
+		FRotator CurrentRotation = GetOwner()->GetActorRotation();
+		if (FMath::Abs(CurrentRotation.Yaw - InitialYaw) > INTERPOLATION_TOLERANCE)
 		{
-			AudioComponent->Play();
-			AudioPlayed = true;
+			CurrentRotation.Yaw = FMath::FInterpConstantTo(CurrentRotation.Yaw, InitialYaw, DeltaTime, CloseSpeed);
+			GetOwner()->SetActorRotation(CurrentRotation);
+
+			if (AudioComponent && !AudioPlayed)
+			{
+				AudioComponent->Play();
+				AudioPlayed = true;
+			}
+		}
+		else if (AudioPlayed)
+		{
+			AudioPlayed = false;
 		}
 	}
-	else if (AudioPlayed)
+	else if (DoorType == DOOR_TYPE_SLIDE)
 	{
-		AudioPlayed = false;
+		FVector CurrentLocation = GetOwner()->GetActorLocation();
+		if (FMath::Abs(CurrentLocation.Z - InitialVerticalPosition) > INTERPOLATION_TOLERANCE)
+		{
+			CurrentLocation.Z = FMath::FInterpConstantTo(CurrentLocation.Z, InitialVerticalPosition, DeltaTime, CloseSpeed);
+			GetOwner()->SetActorLocation(CurrentLocation);
+
+			if (AudioComponent && !AudioPlayed)
+			{
+				AudioComponent->Play();
+				AudioPlayed = true;
+			}
+		}
+		else if (AudioPlayed)
+		{
+			AudioPlayed = false;
+		}
 	}
 }
 
